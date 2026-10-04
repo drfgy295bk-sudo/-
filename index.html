@@ -6,7 +6,7 @@ html
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>ClickBait</title>
     <script src="https://telegram.org"></script>
-     <style>
+    <style>
         :root {
             --bg-color: #0b0c10;
             --panel-color: #1f2833;
@@ -106,7 +106,7 @@ html
             content: attr(data-emoji);
             font-size: 85px;
             transition: transform 0.2s;
-            pointer-events: none; /* Разрешает клики сквозь эмодзи в ТГ */
+            pointer-events: none;
         }
 
         .coin:active { transform: scale(0.94); }
@@ -125,13 +125,15 @@ html
 
         .floating-text {
             position: absolute;
-            font-size: 28px;
+            font-size: 32px;
             font-weight: 900;
-            color: #fff;
+            color: #ffffff;
             text-shadow: 0 0 10px var(--accent-color);
             pointer-events: none;
+            z-index: 999;
             animation: floatUp 0.6s ease-out forwards;
         }
+
         .floating-text.turbo {
             color: var(--turbo-color);
             text-shadow: 0 0 15px var(--turbo-color);
@@ -139,7 +141,7 @@ html
 
         @keyframes floatUp {
             0% { opacity: 1; transform: translateY(0) scale(1.2); }
-            100% { opacity: 0; transform: translateY(-140px) scale(0.7); }
+            100% { opacity: 0; transform: translateY(-140px) scale(0.8); }
         }
 
         .action-row {
@@ -218,7 +220,7 @@ html
             backdrop-filter: blur(6px);
             -webkit-backdrop-filter: blur(6px);
             display: flex; justify-content: center; align-items: center;
-            z-index: 100; opacity: 0; pointer-events: none;
+            z-index: 1000; opacity: 0; pointer-events: none;
             transition: opacity 0.25s ease;
         }
         .modal.active { opacity: 1; pointer-events: auto; }
@@ -274,7 +276,7 @@ html
         </div>
     </div>
 
-    <div class="click-area">
+    <div class="click-area" id="click-zone">
         <div class="coin" id="coin-btn" data-emoji="🥚"></div>
     </div>
 
@@ -284,8 +286,8 @@ html
             <small id="turbo-status">Готов</small>
         </button>
         <button class="action-btn" id="quests-btn">
-            <span>📋 ЗАДАНИЯ</span>
-            <small>Доступны бонусы</small>
+            <span>📋 ЗАЗАНИЯ</span>
+            <small>Бонусы</small>
         </button>
     </div>
 
