@@ -1,10 +1,11 @@
+html
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>ClickBait</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://telegram.org"></script>
     <style>
         :root {
             --bg-color: #0b0c10;
@@ -105,7 +106,7 @@
             content: attr(data-emoji);
             font-size: 85px;
             transition: transform 0.2s;
-            pointer-events: none;
+            pointer-events: none; /* Чтобы клики на Айфоне летели сквозь эмодзи */
         }
 
         .coin:active { transform: scale(0.94); }
@@ -304,5 +305,3 @@
                 <div class="upgrade-effect">Добавить пассивный доход</div>
             </div>
             <div class="upgrade-cost" id="miner-cost">100</div>
-        </button>
-    </div>
