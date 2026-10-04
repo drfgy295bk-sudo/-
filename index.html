@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Crypto Clicker Ultimate</title>
+    <title>ClickBait</title>
     <script src="https://telegram.org"></script>
     <style>
         :root {
@@ -251,48 +250,244 @@
         .quest-btn.claimed { background: transparent; color: var(--text-secondary); border: 1px solid rgba(255,255,255,0.2); cursor: not-allowed; }
 
         .close-btn {
-            background: transparent; border: 1px solid rgba(255,255,255,0.2);
-            color: #fff; padding: 8px 16px; border-radius: 10px; width: 100%; font-weight: bold; margin-top: 5px;
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <div id="rank-badge" class="rank-badge">Ранг: Новичок 🥚</div>
-        <div class="score-value" id="score">0</div>
+        <div class="rank-badge" id="rank-display">Ранг: Новичок 🥚</div>
+        <div class="score-value" id="score-display">0</div>
         <div class="stats-row">
-            <div>Клик: <span id="click-stat">+1</span></div>
-            <div>В сек: <span id="passive-stat">+0</span></div>
+            <div>Клик: <span id="click-power-display">+1</span></div>
+            <div>В сек: <span id="pps-display">+0</span></div>
         </div>
     </div>
 
     <div class="click-area">
-        <div class="coin" id="coin" data-emoji="🥚"></div>
+        <div class="coin" id="coin-btn" data-emoji="🥚"></div>
     </div>
 
     <div class="action-row">
         <button class="action-btn" id="turbo-btn">
             <span>🚀 ТУРБО (x5)</span>
-            <span id="turbo-timer" style="font-size: 10px; color: var(--text-secondary);">Готов</span>
+            <small id="turbo-status">Готов</small>
         </button>
-        <button class="action-btn" id="quests-menu-btn">
+        <button class="action-btn" id="quests-btn">
             <span>📋 ЗАДАНИЯ</span>
-            <span id="quests-count" style="font-size: 10px; color: var(--success-color);">Доступны бонусы</span>
+            <small>Доступны бонусы</small>
         </button>
     </div>
 
     <div class="upgrade-container">
-        <button class="upgrade-btn" id="up-click-btn" disabled>
+        <button class="upgrade-btn" id="upgrade-click">
             <div class="upgrade-details">
-                <span class="upgrade-name">⚡️ Мульти-клик</span>
-                <span class="upgrade-effect" id="up-click-desc">Улучшить силу нажатия</span>
+                <div class="upgrade-name">⚡ Мульти-клик</div>
+                <div class="upgrade-effect">Улучшить силу нажатия</div>
             </div>
-            <div class="upgrade-cost" id="up-click-cost">50</div>
+            <div class="upgrade-cost" id="click-cost">50</div>
         </button>
-
-        <button class="upgrade-btn" id="up-passive-btn" disabled>
+        <button class="upgrade-btn" id="upgrade-miner">
             <div class="upgrade-details">
-                <span class="upgrade-name">⛏ Авто-майнер</span>
-                <span class="upgrade-effect" id="up-passive-desc">Добавить пассивный доход</span>
+                <div class="upgrade-name">⛏ Авто-майнер</div>
+                <div class="upgrade-effect">Добавить пассивный доход</div>
             </div>
+            <div class="upgrade-cost" id="miner-cost">100</div>
+        </button>
+Используйте код с осторожностью.
+Список заданий
+
+
+
+Накликать 500 монет
++150 монет
+
+Взять
+
+
+Закрыть
+
+// Инициализация Telegram WebApp API
+const tg = window.Telegram ? window.Telegram.WebApp : null;
+if (tg) {
+tg.ready();
+tg.expand(); // Разворачивает приложение на весь экран в ТГ
+}
+// Переменные состояния игры с безопасным сохранением
+let score = parseInt(localStorage.getItem('cb_score')) || 0;
+let clickPower = parseInt(localStorage.getItem('cb_clickPower')) || 1;
+let pps = parseInt(localStorage.getItem('cb_pps')) || 0;
+let clickUpgradeCost = parseInt(localStorage.getItem('cb_clickCost')) || 50;
+let minerUpgradeCost = parseInt(localStorage.getItem('cb_minerCost')) || 100;
+let q1Claimed = localStorage.getItem('cb_q1') === 'true';
+let isTurbo = false;
+let turboTimeout = null;
+// Элементы интерфейса
+const scoreDisplay = document.getElementById('score-display');
+const rankDisplay = document.getElementById('rank-display');
+const clickPowerDisplay = document.getElementById('click-power-display');
+const ppsDisplay = document.getElementById('pps-display');
+const coinBtn = document.getElementById('coin-btn');
+const turboBtn = document.getElementById('turbo-btn');
+const turboStatus = document.getElementById('turbo-status');
+const questsBtn = document.getElementById('quests-btn');
+const questsModal = document.getElementById('quests-modal');
+const closeModalBtn = document.getElementById('close-modal-btn');
+const upgradeClickBtn = document.getElementById('upgrade-click');
+const upgradeMinerBtn = document.getElementById('upgrade-miner');
+const clickCostDisplay = document.getElementById('click-cost');
+const minerCostDisplay = document.getElementById('miner-cost');
+const q1Btn = document.getElementById('q1-btn');
+// Функция сохранения данных
+function saveGame() {
+try {
+localStorage.setItem('cb_score', score);
+localStorage.setItem('cb_clickPower', clickPower);
+localStorage.setItem('cb_pps', pps);
+localStorage.setItem('cb_clickCost', clickUpgradeCost);
+localStorage.setItem('cb_minerCost', minerUpgradeCost);
+localStorage.setItem('cb_q1', q1Claimed);
+} catch (e) {
+console.error("Не удалось сохранить прогресс в LocalStorage", e);
+}
+}
+// Обновление интерфейса
+function updateUI() {
+scoreDisplay.textContent = Math.floor(score);
+clickPowerDisplay.textContent = +${isTurbo ? clickPower * 5 : clickPower};
+ppsDisplay.textContent = +${pps};
+clickCostDisplay.textContent = clickUpgradeCost;
+minerCostDisplay.textContent = minerUpgradeCost;
+// Блокировка кнопок апгрейдов, если не хватает баланса
+upgradeClickBtn.disabled = score < clickUpgradeCost;
+upgradeMinerBtn.disabled = score < minerUpgradeCost;
+// Расчет рангов и смена эмодзи на главной монете
+if (score < 500) {
+rankDisplay.textContent = "Ранг: Новичок 🥚";
+coinBtn.setAttribute('data-emoji', '🥚');
+} else if (score < 5000) {
+rankDisplay.textContent = "Ранг: Тапер 🔨";
+coinBtn.setAttribute('data-emoji', '🔨');
+} else if (score < 25000) {
+rankDisplay.textContent = "Ранг: Майнер ⛏️";
+coinBtn.setAttribute('data-emoji', '⛏️');
+} else {
+rankDisplay.textContent = "Ранг: Крипто Шейх 👑";
+coinBtn.setAttribute('data-emoji', '👑');
+}
+// Статус квеста
+if (q1Claimed) {
+q1Btn.textContent = "Выполнено";
+q1Btn.className = "quest-btn claimed";
+q1Btn.disabled = true;
+} else {
+q1Btn.disabled = score < 500;
+q1Btn.textContent = score >= 500 ? "Забрать" : "В процессе";
+}
+}
+// Создание всплывающего текста циферок при клике
+function createFloatingText(x, y, value) {
+const textElement = document.createElement('div');
+textElement.className = floating-text ${isTurbo ? 'turbo' : ''};
+textElement.textContent = +${value};
+textElement.style.left = ${x - 20}px;
+textElement.style.top = ${y - 30}px;
+document.querySelector('.click-area').appendChild(textElement);
+setTimeout(() => {
+textElement.remove();
+}, 600);
+}
+// Обработка клика по яйцу/монете
+function handleCoinClick(e) {
+e.preventDefault();
+const currentClickPower = isTurbo ? clickPower * 5 : clickPower;
+score += currentClickPower;
+// Получаем координаты клика относительно контейнера
+const rect = document.querySelector('.click-area').getBoundingClientRect();
+let clickX, clickY;
+if (e.touches && e.touches[0]) {
+clickX = e.touches[0].clientX - rect.left;
+clickY = e.touches[0].clientY - rect.top;
+} else {
+clickX = e.clientX - rect.left;
+clickY = e.clientY - rect.top;
+}
+createFloatingText(clickX, clickY, currentClickPower);
+updateUI();
+saveGame();
+}
+// Привязываем события клика и тача (исправляет проблему в ТГ)
+coinBtn.addEventListener('click', handleCoinClick);
+coinBtn.addEventListener('touchstart', handleCoinClick);
+// Покупка апгрейда клика
+upgradeClickBtn.addEventListener('click', () => {
+if (score >= clickUpgradeCost) {
+score -= clickUpgradeCost;
+clickPower += 1;
+clickUpgradeCost = Math.floor(clickUpgradeCost * 1.5);
+updateUI();
+saveGame();
+}
+});
+// Покупка авто-майнера
+upgradeMinerBtn.addEventListener('click', () => {
+if (score >= minerUpgradeCost) {
+score -= minerUpgradeCost;
+pps += 1;
+minerUpgradeCost = Math.floor(minerUpgradeCost * 1.6);
+updateUI();
+saveGame();
+}
+});
+// Активация режима ТУРБО (х5 к клику на 10 секунд)
+turboBtn.addEventListener('click', () => {
+if (isTurbo) return;
+isTurbo = true;
+coinBtn.classList.add('turbo-active');
+turboBtn.classList.add('active-now');
+turboStatus.textContent = "АКТИВЕН 10с";
+updateUI();
+turboTimeout = setTimeout(() => {
+isTurbo = false;
+coinBtn.classList.remove('turbo-active');
+turboBtn.classList.remove('active-now');
+turboStatus.textContent = "Кулдаун";
+turboBtn.disabled = true;
+updateUI();
+// Перезарядка турбо через 30 секунд
+setTimeout(() => {
+turboBtn.disabled = false;
+turboStatus.textContent = "Готов";
+}, 30000);
+}, 10000);
+});
+// Работа пассивного дохода (раз в секунду)
+setInterval(() => {
+if (pps > 0) {
+score += pps;
+updateUI();
+saveGame();
+}
+}, 1000);
+// Логика Модального Окна и Квестов
+questsBtn.addEventListener('click', () => questsModal.classList.add('active'));
+closeModalBtn.addEventListener('click', () => questsModal.classList.remove('active'));
+q1Btn.addEventListener('click', () => {
+if (!q1Claimed && score >= 500) {
+score += 150;
+q1Claimed = true;
+updateUI();
+saveGame();
+}
+});
+// Первый запуск приложения
+updateUI();                        
